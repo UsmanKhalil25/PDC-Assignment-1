@@ -12,6 +12,7 @@ typedef struct {
     int* output;
     int threadId;
     int numThreads;
+    double threadExecutionTime;
 } WorkerArgs;
 
 
@@ -39,8 +40,16 @@ void workerThreadStart(WorkerArgs * const args) {
     int startRow = args->threadId * rowsPerThread;
     int numRows = rowsPerThread;
 
+    /*
+    * There can be an edge case if the height is lets say 1000 rows
+    * and number of threads are 3 so 1000/3 = 333 
+    * The last thread will have to handle the remaining 1 row
+    */
+    if(args->threadId == args->numThreads - 1) {
+        numRows = args->height - startRow;
+    }
 
-    // Compute the Mandelbrot set for the assigned rows
+    double startTime = CycleTimer::currentSeconds();
     mandelbrotSerial(
         args->x0, args->y0, args->x1, args->y1,
         args->width, args->height,
@@ -48,6 +57,8 @@ void workerThreadStart(WorkerArgs * const args) {
         args->maxIterations,
         args->output
     );
+    double endTime = CycleTimer::currentSeconds();
+    args->threadExecutionTime = endTime - startTime;
 }
 
 //
@@ -87,6 +98,7 @@ void mandelbrotThread(
         args[i].maxIterations = maxIterations;
         args[i].numThreads = numThreads;
         args[i].output = output;
+        args[i].threadExecutionTime = 0.0;
       
         args[i].threadId = i;
     }
@@ -103,6 +115,10 @@ void mandelbrotThread(
     // join worker threads
     for (int i=1; i<numThreads; i++) {
         workers[i].join();
+    }
+    
+    for (int i = 0; i < numThreads; i++) {
+        printf("[Thread %d]:\t\tExecution time: %.3f ms\n", i, args[i].threadExecutionTime * 1000);
     }
 }
 
