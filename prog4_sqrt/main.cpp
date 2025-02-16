@@ -27,6 +27,21 @@ int main() {
     float* output = new float[N];
     float* gold = new float[N];
 
+
+    // // MAX SPEED UP
+    // for (unsigned int i = 0; i < N; i++) {
+    //     // Use values near 2.998f so that starting from 1.0f, the iterations required are high.
+    //     // Subtracting (i / (float)N) introduces a very small, gradually changing offset
+    //     // that maintains uniformity across the SIMD lanes.
+    //     values[i] = 2.998f - i / (float)N;
+    // }
+
+    // // MIN SPEED UP
+    // for (unsigned int i = 0; i < N; i++) {
+    //     // Set every value to 1.0f so that the initial guess of 1.0f immediately satisfies convergence.
+    //     values[i] = 1.0f;
+    // }
+
     for (unsigned int i=0; i<N; i++)
     {
         // TODO: CS149 students.  Attempt to change the values in the
